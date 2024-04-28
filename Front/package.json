@@ -1,19 +1,18 @@
 {
-  "name": "client",
+  "name": "front",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "vue": "^3.4.21"
   },
   "devDependencies": {
-
-    "vite": "^5.2.0",
-    "vue-tsc": "^2.0.6"
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0"
   }
 }
