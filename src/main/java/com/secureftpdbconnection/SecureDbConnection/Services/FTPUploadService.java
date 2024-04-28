@@ -17,18 +17,25 @@ import java.util.Base64;
 public class FTPUploadService {
 
     private final FtpSettingsRepository ftpSettingsRepository;
+    private final EncryptionService encryptionService;
 
-    public FTPUploadService(FtpSettingsRepository ftpSettingsRepository) {
+    public FTPUploadService(FtpSettingsRepository ftpSettingsRepository, EncryptionService encryptionService) {
         this.ftpSettingsRepository = ftpSettingsRepository;
+        this.encryptionService = encryptionService;
     }
 
     public ResponseEntity<String> uploadFile(UploadPayload uploadPayload) throws IOException {
+
         ResponseEntity<String> response = null;
         InputStream inputStream = null;
         FTPClient ftpClient = null;
+
         try {
 
-            var ftpSettings = ftpSettingsRepository.findItemByToken(uploadPayload.getToken());
+
+            var token = encryptionService.encrypt(uploadPayload.getToken());
+            var ftpSettings = ftpSettingsRepository.findItemByToken(token);
+            ftpSettings = encryptionService.getDecryptSettings(ftpSettings);
             if (ftpSettings == null) {
                 return ResponseEntity.notFound().build();
             }

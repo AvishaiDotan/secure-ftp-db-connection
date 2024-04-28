@@ -9,14 +9,18 @@ import org.springframework.stereotype.Service;
 public class FtpSettingsService {
 
     private final FtpSettingsRepository ftpSettingsRepository;
-    public FtpSettingsService(FtpSettingsRepository FtpSettingsRepository) {
+    private final EncryptionService encryptionService;
+    public FtpSettingsService(FtpSettingsRepository FtpSettingsRepository, EncryptionService encryptionService) {
         this.ftpSettingsRepository = FtpSettingsRepository;
+        this.encryptionService = encryptionService;
     }
     public ResponseEntity<String> deleteFtpSettings(String token, String tokenPassword) {
         try {
-            if (token == null && tokenPassword == null) {
+            if (token == null || tokenPassword == null) {
                 return ResponseEntity.badRequest().body("Invalid data");
             }
+
+            token = encryptionService.encrypt(token);
 
             var dbSettings = ftpSettingsRepository.findItemByToken(token);
             if (dbSettings == null) {
@@ -42,6 +46,8 @@ public class FtpSettingsService {
                 return ResponseEntity.badRequest().body("Invalid data");
             }
 
+            settings = encryptionService.getEncryptSettings(settings);
+
             var dbSettings = ftpSettingsRepository.findItemByToken(settings.getToken());
             if (dbSettings != null) {
                 return ResponseEntity.badRequest().body("Token already exists");
@@ -52,7 +58,7 @@ public class FtpSettingsService {
             // Implementation logic to create data
             return ResponseEntity.ok("Data created successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to upload to FTP server");
         }
     }
 
@@ -61,6 +67,8 @@ public class FtpSettingsService {
             if (!settings.isValid()) {
                 return ResponseEntity.badRequest().body("Invalid data");
             }
+
+            settings = encryptionService.getEncryptSettings(settings);
 
             var dbSettings = ftpSettingsRepository.findItemByToken(settings.getToken());
             if (dbSettings == null) {
